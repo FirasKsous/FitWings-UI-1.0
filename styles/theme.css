@@ -1,0 +1,174 @@
+/* Base Theme Variables */
+:root {
+    /* Core colors */
+    --primary-blue: #0066ff;
+    --primary-blue-light: #0099ff;
+    --primary-blue-dark: #0052cc;
+    --neon-blue: #00b4ff;
+    --neon-blue-light: #33ccff;
+    
+    /* Light theme */
+    --background: #ffffff;
+    --surface: #f8f9fa;
+    --surface-2: #f1f3f5;
+    --surface-hover: #e9ecef;
+    --border: #e9ecef;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    
+    /* Theme-specific accents */
+    --accent-primary: var(--primary-blue);
+    --accent-secondary: var(--primary-blue-light);
+    --accent-hover: var(--primary-blue-dark);
+    --accent-glow: rgba(0, 102, 255, 0.25);
+    
+    /* RGB values for effects */
+    --accent-primary-rgb: 0, 102, 255;
+    --accent-secondary-rgb: 0, 153, 255;
+    --surface-rgb: 248, 249, 250;
+    
+    /* Enhanced shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, 
+        rgba(var(--accent-primary-rgb), 0.95) 0%,
+        rgba(var(--accent-secondary-rgb), 0.95) 100%);
+    --gradient-hover: linear-gradient(135deg, 
+        rgba(var(--accent-primary-rgb), 0.98) 0%,
+        rgba(var(--accent-secondary-rgb), 0.98) 100%);
+}
+
+[data-theme="dark"] {
+    --background: rgb(11, 12, 16);
+    --surface: rgb(15, 16, 21);
+    --surface-2: rgb(18, 19, 25);
+    --surface-hover: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.04);
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    
+    /* Enhanced accent colors */
+    --accent-primary: rgb(82, 113, 255);
+    --accent-secondary: rgb(56, 89, 255);
+    --accent-hover: rgb(99, 127, 255);
+    --accent-glow: rgba(82, 113, 255, 0.12);
+    
+    /* RGB values for effects */
+    --background-rgb: 11, 12, 16;
+    --surface-rgb: 15, 16, 21;
+    --accent-primary-rgb: 82, 113, 255;
+    --accent-secondary-rgb: 56, 89, 255;
+    
+    /* Enhanced shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg,
+        rgba(var(--accent-primary-rgb), 0.95) 0%,
+        rgba(var(--accent-secondary-rgb), 0.95) 100%);
+    --gradient-hover: linear-gradient(135deg,
+        rgba(var(--accent-primary-rgb), 0.98) 0%,
+        rgba(var(--accent-secondary-rgb), 0.98) 100%);
+}
+
+/* Enhanced transitions */
+body {
+    background-color: var(--background);
+    color: var(--text-primary);
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Force correct scrollbar colors */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color-scheme: light;
+    }
+}
+
+/* Enhanced scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--surface-hover);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+    box-shadow: inset 0 0 6px rgba(var(--accent-primary-rgb), 0.4);
+}
+
+/* Selection styles */
+::selection {
+    background: var(--accent-primary);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Global styles for consistent theme application */
+.app-container {
+    background-color: var(--background);
+    color: var(--text-primary);
+}
+
+.nav-bar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.section-header {
+    color: var(--text-primary);
+}
+
+.section-description {
+    color: var(--text-secondary);
+}
+
+input, select, textarea {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+button {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+button.primary {
+    background-color: var(--accent-primary);
+    color: white;
+    border: none;
+}
+
+button.primary:hover {
+    background-color: var(--accent-hover);
+} 

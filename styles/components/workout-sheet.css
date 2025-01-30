@@ -1,0 +1,734 @@
+/* Base styles for the workout sheet */
+.workout-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: calc(100% - 32px);
+    height: 85vh;
+    max-width: 900px;
+    background: #ffffff;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity, height;
+}
+
+/* Backdrop overlay */
+.workout-sheet-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 999;
+    display: none;
+}
+
+.workout-sheet-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+    display: block;
+}
+
+/* Hide backdrop completely when minimized */
+.workout-sheet.minimized ~ .workout-sheet-backdrop,
+.workout-sheet.will-minimize ~ .workout-sheet-backdrop {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+.workout-sheet.open {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Header Section */
+.workout-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.header-content {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.workout-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 100px;
+    color: #0d6efd;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.workout-type-badge i {
+    font-size: 13px;
+}
+
+.header-content h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #212529;
+    margin: 0 0 12px 0;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 20px;
+    color: #6c757d;
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.workout-meta i {
+    color: #0d6efd;
+    font-size: 14px;
+}
+
+/* Progress Ring */
+.progress-ring {
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+
+.progress-ring circle {
+    fill: none;
+    stroke-width: 4;
+}
+
+.progress-ring-circle-bg {
+    stroke: rgba(13, 110, 253, 0.1);
+}
+
+.progress-ring-circle {
+    stroke: #0d6efd;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15px;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+.workout-description {
+    padding: 20px 32px;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-color);
+}
+
+/* Timer Display */
+.workout-timer {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+}
+
+.minimized-controls {
+    display: none;
+    opacity: 0;
+    width: 100%;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.workout-sheet.minimized .minimized-controls {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.workout-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.workout-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+    opacity: 0.95;
+}
+
+.minimized .workout-timer {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.minimized .timer-control {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    margin-left: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.minimized .timer-control:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.minimized .timer-control i {
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Content Area */
+.workout-sheet-content {
+    height: calc(100% - 48px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 24px 24px;
+    background: #ffffff;
+}
+
+/* Exercise Section */
+.exercise-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.exercise-row {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.exercise-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.exercise-sets {
+    font-size: 13px;
+    color: #6c757d;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+.set-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+/* Set Row Styles */
+.set-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr auto 40px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 8px;
+}
+
+.set-row:hover {
+    background: #f8f9fa;
+    border-color: rgba(13, 110, 253, 0.2);
+}
+
+.set-number {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* Input Styles */
+.workout-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #212529;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.workout-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+    outline: none;
+}
+
+.workout-input::placeholder {
+    color: #adb5bd;
+}
+
+/* Set Controls */
+.set-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.rpe-button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.rpe-button:hover {
+    background: #f8f9fa;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.complete-set {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.complete-set:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.set-row.completed .complete-set {
+    background: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+/* Remove Set Button */
+.remove-set-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    padding: 0;
+}
+
+.set-row:hover .remove-set-btn {
+    opacity: 0.7;
+}
+
+.remove-set-btn:hover {
+    background: rgba(255, 59, 48, 0.1);
+    color: #dc3545;
+    opacity: 1 !important;
+}
+
+.remove-set-btn i {
+    font-size: 16px;
+}
+
+/* Set Row Animations */
+.set-row.removing {
+    animation: removeSet 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes removeSet {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+        height: var(--row-height);
+        margin-bottom: 8px;
+        padding: 12px 16px;
+    }
+    100% {
+        transform: translateX(-100%);
+        opacity: 0;
+        height: 0;
+        margin-bottom: 0;
+        padding: 0;
+    }
+}
+
+.set-row.adding {
+    animation: addSet 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: top;
+}
+
+@keyframes addSet {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+        height: 0;
+        margin-bottom: 0;
+        padding: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+        height: var(--row-height);
+        margin-bottom: 8px;
+        padding: 12px 16px;
+    }
+}
+
+/* Completion Animation */
+.set-row.completed {
+    background: rgba(25, 135, 84, 0.05);
+    border-color: rgba(25, 135, 84, 0.2);
+}
+
+.completion-animation {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(25, 135, 84, 0.2),
+        transparent
+    );
+    pointer-events: none;
+    animation: sweep 0.6s ease-out forwards;
+}
+
+@keyframes sweep {
+    0% {
+        transform: translateX(-100%) skewX(-10deg);
+    }
+    100% {
+        transform: translateX(100%) skewX(-10deg);
+    }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .workout-sheet {
+        width: 100%;
+        height: 90vh;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .set-row {
+        grid-template-columns: 60px 1fr 1fr auto 40px;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .workout-input {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+/* Minimized State */
+.workout-sheet.minimized {
+    height: 64px !important;
+    max-width: 420px;
+    width: calc(100% - 48px);
+    border-radius: 32px;
+    background: linear-gradient(135deg, 
+        rgba(13, 110, 253, 0.98) 0%,
+        rgba(13, 202, 240, 0.98) 100%);
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    box-shadow: 0 8px 32px rgba(13, 110, 253, 0.25),
+                0 4px 16px rgba(13, 202, 240, 0.15),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    opacity: 0.98;
+    pointer-events: all;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+/* Remove all backdrop filters */
+.workout-sheet.minimized,
+.workout-sheet.will-minimize,
+.minimized .workout-timer,
+.minimized .timer-control,
+.workout-sheet-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.workout-sheet.minimized:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 12px 36px rgba(13, 110, 253, 0.35),
+                0 8px 24px rgba(13, 202, 240, 0.25),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    opacity: 1;
+    background: linear-gradient(135deg, 
+        rgba(13, 110, 253, 0.98) 0%,
+        rgba(13, 202, 240, 0.98) 100%);
+}
+
+.workout-sheet.minimized .workout-sheet-content,
+.workout-sheet.minimized .workout-sheet-handle {
+    display: none;
+}
+
+.workout-sheet.minimized .workout-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.workout-sheet.minimized .workout-info h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.workout-sheet.minimized .workout-timer {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.workout-sheet.minimized .timer-control {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.workout-sheet.minimized .timer-control:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.workout-sheet.minimized .timer-control.active {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Will Minimize Preview */
+.workout-sheet.will-minimize {
+    height: 72px !important;
+    max-width: 420px;
+    width: calc(100% - 48px);
+    border-radius: 36px;
+    background: linear-gradient(135deg, 
+        rgba(13, 110, 253, 0.95) 0%,
+        rgba(13, 202, 240, 0.95) 100%);
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    box-shadow: 0 8px 32px rgba(13, 110, 253, 0.25),
+                0 4px 16px rgba(13, 202, 240, 0.15),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+.workout-sheet.will-minimize .workout-sheet-content {
+    opacity: 0;
+}
+
+/* Handle styles */
+.workout-sheet-handle {
+    width: 100%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    background: var(--bg-secondary);
+    border-radius: 24px 24px 0 0;
+    position: relative;
+}
+
+.workout-sheet-handle::after {
+    content: '';
+    width: 40px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.workout-sheet.dragging .workout-sheet-handle {
+    cursor: grabbing;
+}
+
+.workout-sheet.dragging .workout-sheet-handle::after {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.workout-sheet-content {
+    height: calc(100% - 48px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 24px 24px;
+    background: var(--bg-secondary);
+}
+
+@media (max-width: 480px) {
+    .set-row {
+        grid-template-columns: 50px 1fr 1fr auto auto;
+        gap: 8px;
+        padding: 6px;
+    }
+
+    .workout-input {
+        padding: 6px 8px;
+        font-size: 14px;
+    }
+
+    .timer-control,
+    .complete-set {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Add Set Button */
+.add-set-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid rgba(13, 110, 253, 0.3);
+    border-radius: 8px;
+    background: rgba(13, 110, 253, 0.05);
+    color: #0d6efd;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 12px;
+}
+
+.add-set-btn:hover {
+    background: rgba(13, 110, 253, 0.1);
+    border-color: #0d6efd;
+}
+
+.add-set-btn i {
+    font-size: 14px;
+}

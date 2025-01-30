@@ -1,0 +1,224 @@
+:root {
+    --surface-color: var(--surface);
+    --surface-color-hover: var(--surface-2);
+    --surface-color-active: var(--surface-hover);
+    --primary-color: var(--accent-primary);
+    --primary-color-hover: var(--accent-hover);
+    --primary-color-rgb: 0, 102, 255;
+    --text-color: var(--text-primary);
+}
+
+[data-theme="dark"] {
+    --surface-color: var(--surface);
+    --surface-color-hover: var(--surface-2);
+    --surface-color-active: var(--surface-hover);
+    --primary-color: var(--accent-primary);
+    --primary-color-hover: var(--accent-hover);
+    --primary-color-rgb: 0, 180, 255;
+    --text-color: var(--text-primary);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: color-mix(in srgb, black 40%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+    padding: 24px;
+}
+
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+}
+
+.modal.show .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.modal-body p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.workout-switch-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.btn-switch-workout {
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.btn-switch-workout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-glow);
+    filter: brightness(1.1);
+}
+
+.btn-cancel {
+    padding: 16px 32px;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border: none;
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-cancel:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+/* Dark mode specific styles */
+[data-theme="dark"] .modal-content {
+    background: color-mix(in srgb, var(--surface) 95%, transparent);
+    box-shadow: 0 8px 32px var(--accent-glow);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .btn-switch-workout {
+    box-shadow: 0 8px 32px var(--accent-glow);
+}
+
+[data-theme="dark"] .btn-switch-workout:hover {
+    box-shadow: 0 12px 40px var(--accent-glow);
+}
+
+[data-theme="dark"] .btn-switch-workout::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    filter: blur(20px);
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+[data-theme="dark"] .btn-switch-workout:hover::after {
+    opacity: 0.8;
+}
+
+/* Ensure modal is always visible when shown */
+.workout-switch-modal {
+    display: flex !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.workout-switch-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 1.5rem;
+    }
+    
+    .workout-switch-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .workout-switch-modal h2 {
+        font-size: 1.25rem;
+    }
+    
+    .workout-switch-modal p {
+        font-size: 0.9rem;
+    }
+    
+    .btn-switch-workout,
+    .btn-cancel {
+        padding: 0.625rem 1.25rem;
+    }
+} 

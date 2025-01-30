@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <title>FitWings - Your Fitness Journey</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components/workout-sheet.css">
+    <link rel="stylesheet" href="styles/components/workout-table.css">
+    <link rel="stylesheet" href="styles/components/modal.css">
+    <link rel="stylesheet" href="styles/components/calendar.css">
+    <link rel="stylesheet" href="styles/components/workout-view-toggle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-brand">
+                <img src="assets/logo.svg" alt="FitWings" class="logo">
+            </div>
+            
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li class="active">
+                        <a href="#dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#workouts">
+                            <i class="fas fa-dumbbell"></i>
+                            <span>Workouts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#nutrition">
+                            <i class="fas fa-apple-alt"></i>
+                            <span>Nutrition</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#progress">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Progress</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search workouts, exercises...">
+                </div>
+                <div class="user-menu">
+                    <button class="notifications">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <img src="assets/avatar-placeholder.svg" alt="User" class="avatar">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Content Sections -->
+            <div id="dashboardSection" class="section hidden">
+                <div class="section-header">
+                    <h1>Dashboard</h1>
+                </div>
+                <!-- Dashboard content -->
+            </div>
+            
+            <div id="workoutSection" class="section workout-section">
+                <div class="section-header">
+                    <h1>Workouts</h1>
+                </div>
+                <div class="view-toggle-container">
+                    <div class="toggle-buttons">
+                        <button class="toggle-button active" data-view="calendar">My Calendar</button>
+                        <button class="toggle-button" data-view="workouts">My Workouts</button>
+                    </div>
+                </div>
+                
+                <div class="views-container">
+                    <div id="calendar-view" class="view active"></div>
+                    <div id="workouts-view" class="view">
+                        <div class="workout-cards">
+                            <!-- Workout cards will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nutritionSection" class="section hidden">
+                <div class="section-header">
+                    <h1>Nutrition</h1>
+                </div>
+                <!-- Nutrition content -->
+            </div>
+
+            <div id="progressSection" class="section hidden">
+                <div class="section-header">
+                    <h1>Progress</h1>
+                </div>
+                <!-- Progress content -->
+            </div>
+
+            <div id="settingsSection" class="section hidden">
+                <div class="section-header">
+                    <h1>Settings</h1>
+                    <p class="section-description">Customize your app experience</p>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h3><i class="fas fa-moon"></i>Dark Mode</h3>
+                                <p>Switch to dark theme for better viewing in low light conditions</p>
+                            </div>
+                            <div class="theme-toggle">
+                                <input type="checkbox" id="themeToggle">
+                                <label for="themeToggle" aria-label="Toggle dark mode"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- FAB Button -->
+        <button class="fab" id="createWorkoutBtn">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <script type="module" src="js/components/WorkoutSheet.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/init.js"></script>
+</body>
+</html>

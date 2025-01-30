@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="50" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="35" font-family="Arial" font-size="30" fill="#00B4FF">FitWings</text>
+    <path d="M160 25C160 31.0751 155.075 36 149 36C142.925 36 138 31.0751 138 25C138 18.9249 142.925 14 149 14C155.075 14 160 18.9249 160 25Z" stroke="#00B4FF" stroke-width="2"/>
+    <path d="M150 20L148 30M148 20L150 30" stroke="#00B4FF" stroke-width="2"/>
+</svg>
