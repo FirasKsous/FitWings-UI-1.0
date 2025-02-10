@@ -10,235 +10,123 @@ class WorkoutEvent {
     }
 }
 
-class Calendar {
+export class Calendar {
     constructor(container) {
         if (!container) {
             console.error('Calendar container is required');
             return;
         }
         this.container = container;
+        this.currentView = 'week';
         this.currentDate = new Date();
-        this.selectedDate = null;
         this.workouts = new Map();
-        this.draggedWorkout = null;
-        this.workoutManager = null;
-        this.currentView = 'month';
-        
-        // Clear any existing content and setup
-        this.container.innerHTML = '';
-        this.container.className = 'calendar-section';
-        
+        this.draggedElement = null;
+        this.ghostElement = null;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.sourceDate = null;
+        this._dragDropListeners = null;
+
+        // Initialize immediately
         this.init();
     }
 
-    setWorkoutManager(manager) {
-        this.workoutManager = manager;
-    }
-
     init() {
+        console.log('Initializing calendar...');
         this.createCalendarStructure();
         this.setupEventListeners();
+        this.setupDragAndDrop();
+        
+        // Add sample workouts for testing
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const sampleWorkouts = [
+            {
+                id: '1',
+                title: 'Upper Body Strength',
+                duration: '45 min',
+                type: 'Strength',
+                intensity: 'High',
+                color: '#4F46E5',
+                isCompleted: false
+            },
+            {
+                id: '2',
+                title: 'HIIT Cardio',
+                duration: '30 min',
+                type: 'Cardio',
+                intensity: 'High',
+                color: '#EF4444',
+                isCompleted: false
+            },
+            {
+                id: '3',
+                title: 'Lower Body Focus',
+                duration: '50 min',
+                type: 'Strength',
+                intensity: 'Medium',
+                color: '#8B5CF6',
+                isCompleted: false
+            }
+        ];
+
+        // Add workouts to today's date
+        const todayStr = this.formatDate(today);
+        this.workouts.set(todayStr, sampleWorkouts.map(workout => new WorkoutEvent(workout)));
+        
         this.renderCalendar();
+        console.log('Calendar initialized with workouts:', this.workouts);
     }
 
     createCalendarStructure() {
         this.container.innerHTML = `
-            <div class="calendar-container">
+            <div class="calendar-section">
                 <div class="calendar-header">
-                    <div class="calendar-title-section">
-                        <div class="calendar-controls">
-                            <button class="nav-button prev-month" aria-label="Previous month">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <h2 class="calendar-title"></h2>
-                            <button class="nav-button next-month" aria-label="Next month">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="view-switcher">
-                            <button class="view-option active" data-view="month">
-                                <i class="fas fa-calendar-alt"></i>
-                                Month
-                            </button>
-                            <button class="view-option" data-view="week">
-                                <i class="fas fa-calendar-week"></i>
-                                Week
-                            </button>
-                        </div>
+                    <div class="calendar-controls">
+                        <button class="nav-button prev" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="nav-button today" aria-label="Today">Today</button>
+                        <h2 class="calendar-title"></h2>
+                        <button class="nav-button next" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="view-switcher">
+                        <button class="view-button" data-view="day">Day</button>
+                        <button class="view-button active" data-view="week">Week</button>
+                        <button class="view-button" data-view="month">Month</button>
                     </div>
                 </div>
                 <div class="calendar-content">
                     <div class="weekday-headers"></div>
                     <div class="calendar-days"></div>
                 </div>
+                <div class="calendar-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading calendar...</p>
+                </div>
+                <div class="calendar-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p class="error-message"></p>
+                    <button class="retry-button">
+                        <i class="fas fa-redo"></i>
+                        Retry
+                    </button>
+                </div>
             </div>
         `;
 
-        // Cache DOM elements after creating structure
+        // Cache DOM elements
         this.calendarTitle = this.container.querySelector('.calendar-title');
         this.calendarDays = this.container.querySelector('.calendar-days');
         this.weekdayHeaders = this.container.querySelector('.weekday-headers');
-        this.viewSwitcher = this.container.querySelector('.view-switcher');
-        this.viewOptions = this.container.querySelectorAll('.view-option');
+        this.loadingElement = this.container.querySelector('.calendar-loading');
+        this.errorElement = this.container.querySelector('.calendar-error');
         
         this.renderWeekdayHeaders();
-    }
-
-    setupEventListeners() {
-        if (!this.container) {
-            console.error('Cannot setup event listeners: container is null');
-            return;
-        }
-
-        // Navigation buttons
-        const prevButton = this.container.querySelector('.prev-month');
-        const nextButton = this.container.querySelector('.next-month');
-
-        if (prevButton) {
-            prevButton.addEventListener('click', () => {
-                if (this.calendarDays) {
-                    this.calendarDays.classList.add('fade-out');
-                    setTimeout(() => {
-                        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-                        this.renderCalendar();
-                    }, 200);
-                }
-            });
-        }
-
-        if (nextButton) {
-            nextButton.addEventListener('click', () => {
-                if (this.calendarDays) {
-                    this.calendarDays.classList.add('fade-out');
-                    setTimeout(() => {
-                        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-                        this.renderCalendar();
-                    }, 200);
-                }
-            });
-        }
-
-        // View switching
-        if (this.viewOptions) {
-            this.viewOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    const view = option.dataset.view;
-                    this.switchView(view);
-                });
-            });
-        }
-
-        // Day cell click handler using event delegation
-        if (this.calendarDays) {
-            this.calendarDays.addEventListener('click', (e) => {
-                const dayCell = e.target.closest('.day-cell');
-                if (!dayCell) return;
-
-                const dateStr = dayCell.dataset.date;
-                if (!dateStr) return;
-
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return;
-
-                this.selectDate(date);
-            });
-        }
-
-        // Workout event handling using event delegation
-        this.container.addEventListener('click', (e) => {
-            const workoutEvent = e.target.closest('.workout-event');
-            if (workoutEvent) {
-                e.stopPropagation(); // Prevent day cell selection
-                const workoutId = workoutEvent.dataset.workoutId;
-                if (workoutId) {
-                    const workout = this.getWorkoutById(workoutId);
-                    if (workout) {
-                        this.showWorkoutDetails(workout);
-                    }
-                }
-            }
-        });
-
-        // Setup drag and drop if elements exist
-        if (this.calendarDays) {
-            this.setupDragAndDrop();
-        }
-    }
-
-    setupDragAndDrop() {
-        // Drag start
-        this.container.addEventListener('dragstart', (e) => {
-            // First try to find the workout event from the target
-            let workoutEvent = e.target;
-            if (!workoutEvent.classList.contains('workout-event')) {
-                workoutEvent = e.target.closest('.workout-event');
-            }
-            
-            if (workoutEvent) {
-                const dayCell = workoutEvent.closest('.day-cell');
-                if (!dayCell) return;
-                
-                this.draggedWorkout = {
-                    id: workoutEvent.dataset.workoutId,
-                    sourceDate: dayCell.dataset.date
-                };
-                workoutEvent.classList.add('dragging');
-                
-                // Set drag image
-                const dragImage = workoutEvent.cloneNode(true);
-                dragImage.style.position = 'absolute';
-                dragImage.style.top = '-1000px';
-                document.body.appendChild(dragImage);
-                e.dataTransfer.setDragImage(dragImage, 10, 10);
-                setTimeout(() => dragImage.remove(), 0);
-            }
-        });
-
-        // Drag end
-        this.container.addEventListener('dragend', (e) => {
-            const workoutEvent = e.target.closest('.workout-event');
-            if (workoutEvent) {
-                workoutEvent.classList.remove('dragging');
-                this.container.querySelectorAll('.day-cell').forEach(day => {
-                    day.classList.remove('drag-over');
-                });
-                this.draggedWorkout = null;
-            }
-        });
-
-        // Drag over
-        this.container.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const dayElement = e.target.closest('.day-cell');
-            if (dayElement && this.draggedWorkout) {
-                dayElement.classList.add('drag-over');
-            }
-        });
-
-        // Drag leave
-        this.container.addEventListener('dragleave', (e) => {
-            const dayElement = e.target.closest('.day-cell');
-            if (dayElement) {
-                dayElement.classList.remove('drag-over');
-            }
-        });
-
-        // Drop
-        this.container.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const dayElement = e.target.closest('.day-cell');
-            if (dayElement && this.draggedWorkout) {
-                const targetDate = dayElement.dataset.date;
-                if (targetDate !== this.draggedWorkout.sourceDate) {
-                    this.moveWorkout(
-                        this.draggedWorkout.id,
-                        new Date(this.draggedWorkout.sourceDate),
-                        new Date(targetDate)
-                    );
-                }
-                dayElement.classList.remove('drag-over');
-            }
-        });
     }
 
     renderWeekdayHeaders() {
@@ -248,145 +136,277 @@ class Calendar {
         ).join('');
     }
 
+    setupEventListeners() {
+        // Navigation buttons
+        this.container.querySelector('.prev').addEventListener('click', () => this.navigate(-1));
+        this.container.querySelector('.next').addEventListener('click', () => this.navigate(1));
+        this.container.querySelector('.today').addEventListener('click', () => {
+            this.currentDate = new Date();
+            this.renderCalendar();
+        });
+
+        // View switcher
+        const viewButtons = this.container.querySelectorAll('.view-button');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const newView = button.dataset.view;
+                if (newView !== this.currentView) {
+                    this.switchView(newView);
+                }
+            });
+        });
+
+        // Retry button
+        this.container.querySelector('.retry-button')?.addEventListener('click', () => this.retryLoad());
+    }
+
+    async switchView(newView) {
+        const daysContainer = this.container.querySelector('.calendar-days');
+        const viewButtons = this.container.querySelectorAll('.view-button');
+
+        // Update buttons
+        viewButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === newView);
+        });
+
+        // Animate view transition
+        daysContainer.classList.add('fade-out');
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        this.currentView = newView;
+        this.renderCalendar();
+
+        daysContainer.classList.remove('fade-out');
+        daysContainer.classList.add('fade-in');
+        setTimeout(() => daysContainer.classList.remove('fade-in'), 300);
+    }
+
+    navigate(direction) {
+        switch (this.currentView) {
+            case 'day':
+                this.currentDate.setDate(this.currentDate.getDate() + direction);
+                break;
+            case 'week':
+                this.currentDate.setDate(this.currentDate.getDate() + (direction * 7));
+                break;
+            case 'month':
+                this.currentDate.setMonth(this.currentDate.getMonth() + direction);
+                break;
+        }
+        this.renderCalendar();
+    }
+
+    updateTitle() {
+        if (!this.calendarTitle) return;
+
+        const options = { year: 'numeric', month: 'long' };
+        let title = '';
+
+        switch (this.currentView) {
+            case 'day':
+                title = this.currentDate.toLocaleDateString(undefined, { ...options, day: 'numeric' });
+                break;
+            case 'week': {
+                const weekStart = new Date(this.currentDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                title = `${weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString(undefined, { ...options, day: 'numeric' })}`;
+                break;
+            }
+            case 'month':
+                title = this.currentDate.toLocaleDateString(undefined, options);
+                break;
+        }
+
+        this.calendarTitle.textContent = title;
+    }
+
     renderCalendar() {
-        if (!this.calendarTitle || !this.calendarDays) return;
+        this.updateTitle();
+        if (!this.calendarDays) return;
 
-        const year = this.currentDate.getFullYear();
-        const month = this.currentDate.getMonth();
-
-        // Update title
-        this.calendarTitle.textContent = `${this.getMonthName(month)} ${year}`;
-
-        // Clear previous calendar days
-        this.calendarDays.innerHTML = '';
-
-        if (this.currentView === 'month') {
-            this.renderMonthView();
-        } else if (this.currentView === 'week') {
-            this.renderWeekView();
-        }
-    }
-
-    renderMonthView() {
-        const year = this.currentDate.getFullYear();
-        const month = this.currentDate.getMonth();
-
-        // Calculate dates
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startDay = new Date(firstDay);
-        startDay.setDate(startDay.getDate() - firstDay.getDay());
-
-        let currentDay = new Date(startDay);
-        let daysHTML = '';
-        let animationOrder = 0;
-
-        // Generate calendar days
-        while (currentDay <= lastDay || currentDay.getDay() !== 0) {
-            const isOtherMonth = currentDay.getMonth() !== month;
-            daysHTML += this.createDayCell(currentDay, isOtherMonth, animationOrder++);
-            currentDay.setDate(currentDay.getDate() + 1);
-        }
-
-        this.calendarDays.innerHTML = daysHTML;
-        this.calendarDays.classList.remove('fade-out');
-
-        // Reattach drag and drop handlers
-        this.setupDragAndDrop();
-    }
-
-    renderWeekView() {
-        const startOfWeek = new Date(this.currentDate);
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
-        let daysHTML = '';
-        for (let i = 0; i < 7; i++) {
-            const currentDay = new Date(startOfWeek);
-            currentDay.setDate(currentDay.getDate() + i);
-            daysHTML += this.createDayCell(currentDay, false);
-        }
-
-        this.calendarDays.innerHTML = daysHTML;
-        this.calendarDays.classList.remove('fade-out');
-
-        // Reattach drag and drop handlers
-        this.setupDragAndDrop();
-    }
-
-    createDayCell(date, isOtherMonth, animationOrder) {
-        const dateStr = date.toISOString().split('T')[0];
-        const isToday = date.toDateString() === new Date().toDateString();
-        const isSelected = this.selectedDate && date.toDateString() === this.selectedDate.toDateString();
+        this.calendarDays.className = `calendar-days ${this.currentView}-view`;
         
-        const classes = [
-            'day-cell',
-            isOtherMonth ? 'other-month' : '',
-            isToday ? 'today' : '',
-            isSelected ? 'selected' : ''
-        ].filter(Boolean).join(' ');
+        switch (this.currentView) {
+            case 'day':
+                this.renderDayView();
+                break;
+            case 'week':
+                this.renderWeekView();
+                break;
+            case 'month':
+                this.renderMonthView();
+                break;
+        }
+    }
 
-        // Get workouts for this date
-        const workouts = this.workouts.get(dateStr) || [];
-        
-        return `
-            <div class="${classes}" data-date="${dateStr}" style="--animation-order: ${animationOrder}">
-                <span class="day-number">${date.getDate()}</span>
-                ${this.renderWorkoutList(workouts)}
+    renderDayView() {
+        this.calendarDays.innerHTML = `
+            <div class="day-column" data-date="${this.formatDate(this.currentDate)}">
+                <div class="day-header">
+                    <span class="day-name">${this.currentDate.toLocaleDateString(undefined, { weekday: 'long' })}</span>
+                    <span class="day-number">${this.currentDate.getDate()}</span>
+                </div>
+                <div class="day-content">
+                    ${this.renderWorkouts(this.currentDate) || this.renderEmptyDay()}
+                </div>
             </div>
         `;
     }
 
-    renderWorkoutList(workouts) {
-        if (!workouts.length) return '';
+    renderWeekView() {
+        const weekStart = new Date(this.currentDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+        let weekHtml = '';
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(date.getDate() + i);
+            const isToday = this.isSameDay(date, new Date());
+            
+            weekHtml += `
+                <div class="week-day-column${isToday ? ' today' : ''}" data-date="${this.formatDate(date)}">
+                    <div class="day-header">
+                        <span class="day-name">${date.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                        <span class="day-number">${date.getDate()}</span>
+                    </div>
+                    <div class="day-content">
+                        ${this.renderWorkouts(date) || this.renderEmptyDay()}
+                    </div>
+                </div>
+            `;
+        }
+        this.calendarDays.innerHTML = weekHtml;
+    }
+
+    renderMonthView() {
+        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
+        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+
+        let monthHtml = '';
+        for (let i = 0; i < 42; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            const isCurrentMonth = date.getMonth() === this.currentDate.getMonth();
+            const isToday = this.isSameDay(date, new Date());
+            
+            monthHtml += `
+                <div class="month-day-cell${isCurrentMonth ? ' current-month' : ' other-month'}${isToday ? ' today' : ''}" 
+                     data-date="${this.formatDate(date)}">
+                    <div class="day-header">
+                        <span class="day-number">${date.getDate()}</span>
+                    </div>
+                    <div class="day-content">
+                        ${this.renderWorkouts(date) || this.renderEmptyDay()}
+                    </div>
+                </div>
+            `;
+
+            if (date >= lastDay && (i + 1) % 7 === 0) break;
+        }
+        this.calendarDays.innerHTML = monthHtml;
+    }
+
+    renderWorkouts(date) {
+        const dateStr = this.formatDate(date);
+        const workouts = this.workouts.get(dateStr) || [];
+        console.log('Rendering workouts for date:', dateStr, workouts);
+        
+        if (workouts.length === 0) {
+            return this.renderEmptyDay();
+        }
         
         return `
-            <div class="workout-list">
+            <div class="day-workouts">
                 ${workouts.map(workout => `
-                    <div class="workout-event" data-workout-id="${workout.id}" draggable="true">
-                        <span class="workout-title">${workout.title}</span>
-                        <span class="workout-duration">${workout.duration}</span>
-                        ${workout.isCompleted ? '<i class="fas fa-check-circle workout-completed-icon"></i>' : ''}
+                    <div class="workout-card" draggable="true" data-workout-id="${workout.id}">
+                        <div class="workout-time">
+                            <i class="fas fa-clock"></i>
+                            ${workout.duration}
+                        </div>
+                        <div class="workout-title">${workout.title}</div>
+                        <div class="workout-type">
+                            <i class="fas fa-dumbbell"></i>
+                            ${workout.type}
+                        </div>
+                        ${workout.isCompleted ? '<div class="workout-status completed"><i class="fas fa-check"></i></div>' : ''}
                     </div>
                 `).join('')}
             </div>
         `;
     }
 
-    selectDate(date) {
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // If clicking the same date that's already selected, unselect it
-        if (this.selectedDate && this.isSameDay(this.selectedDate, date)) {
-            this.selectedDate = null;
-            const prevSelected = this.container.querySelector('.day-cell.selected');
-            if (prevSelected) {
-                prevSelected.classList.remove('selected');
+    renderEmptyDay() {
+        return `
+            <div class="empty-day">
+                <i class="fas fa-plus-circle"></i>
+                <p>No workouts scheduled</p>
+            </div>
+        `;
+    }
+
+    formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    isSameDay(date1, date2) {
+        return date1.getDate() === date2.getDate() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getFullYear() === date2.getFullYear();
+    }
+
+    // Loading and error handling methods
+    showLoading() {
+        if (this.loadingElement) {
+            this.loadingElement.classList.add('visible');
+        }
+    }
+
+    hideLoading() {
+        if (this.loadingElement) {
+            this.loadingElement.classList.remove('visible');
+        }
+    }
+
+    showError(message) {
+        if (this.errorElement) {
+            const messageEl = this.errorElement.querySelector('.error-message');
+            if (messageEl) {
+                messageEl.textContent = message || 'Error loading calendar';
             }
-            return;
+            this.errorElement.classList.add('visible');
         }
+    }
 
-        // Remove previous selection
-        const prevSelected = this.container.querySelector('.day-cell.selected');
-        if (prevSelected) {
-            prevSelected.classList.remove('selected');
+    hideError() {
+        if (this.errorElement) {
+            this.errorElement.classList.remove('visible');
         }
+    }
 
-        // Add selection to new date
-        const newSelected = this.container.querySelector(`[data-date="${dateStr}"]`);
-        if (newSelected) {
-            newSelected.classList.add('selected');
+    async retryLoad() {
+        this.hideError();
+        this.showLoading();
+        try {
+            await this.renderCalendar();
+        } catch (error) {
+            console.error('Failed to reload calendar:', error);
+            this.showError('Failed to reload calendar');
+        } finally {
+            this.hideLoading();
         }
+    }
 
-        this.selectedDate = date;
-
-        // Dispatch date selection event
-        this.container.dispatchEvent(new CustomEvent('dateSelected', {
-            detail: { date: this.selectedDate }
-        }));
+    setWorkoutManager(manager) {
+        this.workoutManager = manager;
     }
 
     addWorkout(date, workout) {
-        const dateStr = date.toISOString().split('T')[0];
+        console.log('Adding workout to calendar:', workout);
+        const dateStr = this.formatDate(date);
         if (!this.workouts.has(dateStr)) {
             this.workouts.set(dateStr, []);
         }
@@ -395,29 +415,78 @@ class Calendar {
         this.renderCalendar();
     }
 
-    moveWorkout(workoutId, fromDate, toDate) {
+    async moveWorkout(workoutId, fromDate, toDate) {
+        try {
+            // Validate input parameters
+            if (!workoutId) {
+                console.error('moveWorkout: workoutId is missing');
+                return;
+            }
+            
+            if (!fromDate || !toDate) {
+                console.error('moveWorkout: invalid dates provided', { fromDate, toDate });
+                return;
+            }
+            
+            this.showLoading();
+            
         const fromDateStr = fromDate.toISOString().split('T')[0];
         const toDateStr = toDate.toISOString().split('T')[0];
         
-        if (this.workouts.has(fromDateStr)) {
-            const workouts = this.workouts.get(fromDateStr);
-            const workoutIndex = workouts.findIndex(w => w.id === workoutId);
+            // Check if workout exists in source date
+            if (!this.workouts.has(fromDateStr)) {
+                console.error('moveWorkout: source date not found', fromDateStr);
+                return;
+            }
             
-            if (workoutIndex !== -1) {
-                const workout = workouts[workoutIndex];
-                workouts.splice(workoutIndex, 1);
-                
+            const workouts = this.workouts.get(fromDateStr);
+            if (!Array.isArray(workouts)) {
+                console.error('moveWorkout: invalid workouts array for date', fromDateStr);
+                return;
+            }
+            
+            const workoutIndex = workouts.findIndex(w => w && w.id === workoutId);
+            
+            if (workoutIndex === -1) {
+                console.error('moveWorkout: workout not found in source date', { workoutId, fromDateStr });
+                return;
+            }
+            
+            // Remove workout from source date
+            const workout = workouts.splice(workoutIndex, 1)[0];
+            
+            // Validate workout object
+            if (!workout || !workout.id) {
+                console.error('moveWorkout: invalid workout object', workout);
+                return;
+            }
+            
+            // Initialize target date array if needed
                 if (!this.workouts.has(toDateStr)) {
                     this.workouts.set(toDateStr, []);
                 }
+            
+            // Add workout to target date
                 this.workouts.get(toDateStr).push(workout);
                 
+            // Cleanup empty dates
                 if (workouts.length === 0) {
                     this.workouts.delete(fromDateStr);
                 }
                 
+            // Render changes
                 this.renderCalendar();
-            }
+                
+                // Dispatch event for workout moved
+                this.container.dispatchEvent(new CustomEvent('workoutMoved', {
+                    detail: { workoutId, fromDate, toDate }
+                }));
+            
+        } catch (error) {
+            console.error('Error moving workout:', error);
+            this.showError('Failed to move workout. Please try again.');
+        } finally {
+            this.hideLoading();
         }
     }
 
@@ -431,47 +500,10 @@ class Calendar {
 
     showWorkoutDetails(workout) {
         if (this.workoutManager) {
-            // Use workout manager to show details if available
             this.workoutManager.startWorkout(workout);
         } else {
             console.log('Show workout details:', workout);
         }
-    }
-
-    isSameDay(date1, date2) {
-        return date1.getDate() === date2.getDate() &&
-               date1.getMonth() === date2.getMonth() &&
-               date1.getFullYear() === date2.getFullYear();
-    }
-
-    switchView(view) {
-        if (view === this.currentView) return;
-
-        // Update active state of view options
-        this.viewOptions.forEach(option => {
-            option.classList.toggle('active', option.dataset.view === view);
-        });
-
-        // Add fade-out animation
-        if (this.calendarDays) {
-            this.calendarDays.classList.add('fade-out');
-        }
-
-        setTimeout(() => {
-            this.currentView = view;
-            this.renderCalendar();
-            
-            // Add fade-in animation
-            if (this.calendarDays) {
-                this.calendarDays.classList.remove('fade-out');
-                this.calendarDays.classList.add('fade-in');
-                
-                // Remove the fade-in class after animation completes
-                setTimeout(() => {
-                    this.calendarDays.classList.remove('fade-in');
-                }, 300);
-            }
-        }, 200);
     }
 
     getMonthName(month) {
@@ -479,6 +511,209 @@ class Calendar {
                           'July', 'August', 'September', 'October', 'November', 'December'];
         return monthNames[month];
     }
-}
 
-export { Calendar }; 
+    getDayName(dayIndex) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[dayIndex];
+    }
+
+    highlightToday() {
+        const today = new Date();
+        const todayCell = this.container.querySelector(`.day-cell[data-date="${today.toISOString().split('T')[0]}"]`);
+        if (todayCell) {
+            todayCell.classList.add('today');
+            todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    showAddWorkoutDialog(date) {
+        if (this.workoutManager) {
+            this.workoutManager.createNewWorkout(date);
+        } else {
+            console.log('Workout manager not available');
+        }
+    }
+
+    deleteWorkout(workoutId, dateStr) {
+        if (this.workouts.has(dateStr)) {
+            const workouts = this.workouts.get(dateStr);
+            const index = workouts.findIndex(w => w.id === workoutId);
+            if (index !== -1) {
+                workouts.splice(index, 1);
+                if (workouts.length === 0) {
+                    this.workouts.delete(dateStr);
+                }
+                this.renderCalendar();
+            }
+        }
+    }
+
+    setupDragAndDrop() {
+        // Clean up existing listeners if any
+        if (this._dragDropListeners) {
+            this.cleanupDragDropListeners();
+        }
+
+        // Store listeners for cleanup
+        this._dragDropListeners = {
+            dragstart: this.handleDragStart.bind(this),
+            dragend: this.handleDragEnd.bind(this),
+            dragover: this.handleDragOver.bind(this),
+            dragleave: this.handleDragLeave.bind(this),
+            drop: this.handleDrop.bind(this)
+        };
+
+        // Add listeners to container
+        this.container.addEventListener('dragstart', this._dragDropListeners.dragstart);
+        this.container.addEventListener('dragend', this._dragDropListeners.dragend);
+        this.container.addEventListener('dragover', this._dragDropListeners.dragover);
+        this.container.addEventListener('dragleave', this._dragDropListeners.dragleave);
+        this.container.addEventListener('drop', this._dragDropListeners.drop);
+    }
+
+    cleanupDragDropListeners() {
+        if (!this._dragDropListeners) return;
+
+        this.container.removeEventListener('dragstart', this._dragDropListeners.dragstart);
+        this.container.removeEventListener('dragend', this._dragDropListeners.dragend);
+        this.container.removeEventListener('dragover', this._dragDropListeners.dragover);
+        this.container.removeEventListener('dragleave', this._dragDropListeners.dragleave);
+        this.container.removeEventListener('drop', this._dragDropListeners.drop);
+
+        this._dragDropListeners = null;
+    }
+
+    handleDragStart(e) {
+        const workoutCard = e.target.closest('.workout-card');
+        if (!workoutCard) return;
+
+        this.draggedElement = workoutCard;
+        this.sourceDate = workoutCard.closest('[data-date]')?.dataset.date;
+        
+        // Create ghost element with exact dimensions
+        this.ghostElement = workoutCard.cloneNode(true);
+        this.ghostElement.classList.add('ghost');
+        this.ghostElement.style.width = `${workoutCard.offsetWidth}px`;
+        this.ghostElement.style.height = `${workoutCard.offsetHeight}px`;
+        document.body.appendChild(this.ghostElement);
+
+        // Set initial position
+        const rect = workoutCard.getBoundingClientRect();
+        this.dragStartX = e.clientX - rect.left;
+        this.dragStartY = e.clientY - rect.top;
+        
+        // Update ghost position immediately
+        this.updateGhostPosition(e);
+
+        // Set data transfer
+        e.dataTransfer.setData('text/plain', workoutCard.dataset.workoutId);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setDragImage(new Image(), 0, 0); // Hide default drag image
+
+        // Add dragging classes
+        workoutCard.classList.add('dragging');
+        document.body.classList.add('dragging');
+    }
+
+    handleDragEnd(e) {
+        if (!this.draggedElement) return;
+
+        // Remove ghost element with fade out
+        if (this.ghostElement) {
+            this.ghostElement.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            this.ghostElement.style.opacity = '0';
+            this.ghostElement.style.transform += ' scale(0.95)';
+            setTimeout(() => this.ghostElement.remove(), 200);
+            this.ghostElement = null;
+        }
+
+        // Remove dragging classes
+        this.draggedElement.classList.remove('dragging');
+        document.body.classList.remove('dragging');
+
+        // Clear drag state
+        this.draggedElement = null;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.sourceDate = null;
+
+        // Remove drop target highlights with animation
+        const dropTargets = this.container.querySelectorAll('.drag-over');
+        dropTargets.forEach(target => {
+            target.classList.add('drag-exit');
+            target.classList.remove('drag-over');
+            setTimeout(() => target.classList.remove('drag-exit'), 300);
+        });
+    }
+
+    handleDragOver(e) {
+        if (!this.draggedElement) return;
+
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        // Update ghost position
+        requestAnimationFrame(() => this.updateGhostPosition(e));
+
+        // Handle drop target highlighting
+        const dropTarget = e.target.closest('.week-day-column, .month-day-cell');
+        if (dropTarget && !dropTarget.classList.contains('drag-over')) {
+            // Remove highlight from other targets
+            const currentTargets = this.container.querySelectorAll('.drag-over');
+            currentTargets.forEach(target => {
+                if (target !== dropTarget) {
+                    target.classList.remove('drag-over');
+                }
+            });
+            dropTarget.classList.add('drag-over');
+        }
+    }
+
+    handleDragLeave(e) {
+        const dropTarget = e.target.closest('.week-day-column, .month-day-cell');
+        if (dropTarget) {
+            dropTarget.classList.remove('drag-over');
+        }
+    }
+
+    async handleDrop(e) {
+        e.preventDefault();
+        if (!this.draggedElement) return;
+
+        const dropTarget = e.target.closest('.week-day-column, .month-day-cell');
+        if (!dropTarget) return;
+
+        const workoutId = e.dataTransfer.getData('text/plain');
+        const targetDate = dropTarget.dataset.date;
+
+        if (this.sourceDate && targetDate && this.sourceDate !== targetDate) {
+            try {
+                dropTarget.classList.add('drop-success');
+                await this.moveWorkout(
+                    workoutId,
+                    new Date(this.sourceDate),
+                    new Date(targetDate)
+                );
+                setTimeout(() => dropTarget.classList.remove('drop-success'), 300);
+            } catch (error) {
+                console.error('Failed to move workout:', error);
+                dropTarget.classList.add('drop-error');
+                setTimeout(() => dropTarget.classList.remove('drop-error'), 300);
+            }
+        }
+
+        // Cleanup
+        dropTarget.classList.remove('drag-over');
+        this.handleDragEnd(e);
+    }
+
+    updateGhostPosition(e) {
+        if (!this.ghostElement) return;
+
+        const x = e.clientX - this.dragStartX;
+        const y = e.clientY - this.dragStartY;
+
+        this.ghostElement.style.transform = `translate(${x}px, ${y}px)`;
+        this.ghostElement.classList.toggle('ghost-moving', true);
+    }
+} 
